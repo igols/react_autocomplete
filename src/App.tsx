@@ -17,7 +17,7 @@ export const App: React.FC<Props> = ({
   const [targetPerson, setTargetPerson] = useState<Person | null>();
   const [currentTodos, setCurrentTodos] = useState(peopleFromServer);
   const [inputSort, setInputSort] = useState('');
-  const applyQuery = useCallback(debounce(setInputSort, delay), [delay]);
+  const applyQuery = useCallback(debounce(setCurrentTodos, delay), [delay]);
 
   useEffect(() => {
     return () => {
@@ -26,20 +26,30 @@ export const App: React.FC<Props> = ({
   }, [applyQuery]);
 
   const handleChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputSort(event.target.value);
-    setCurrentTodos(
-      currentTodos.filter(person =>
-        person.name.toLocaleLowerCase().includes(inputSort.toLocaleLowerCase()),
-      ),
-    );
+    setInputSort(event.target.value.trim());
+    if (inputSort !== '') {
+      setCurrentTodos(
+        currentTodos.filter(person =>
+          person.name
+            .toLocaleLowerCase()
+            .includes(inputSort.toLocaleLowerCase()),
+        ),
+      );
+    } else {
+      setCurrentTodos(peopleFromServer);
+    }
   };
 
-  const todos = currentTodos.map(item => (
+  const todos = currentTodos.map((item, index) => (
     <div
       className="dropdown-item"
       data-cy="suggestion-item"
-      key={item.name}
-      onClick={() => setTargetPerson(item)}
+      key={index}
+      onClick={() => {
+        setTargetPerson(item);
+        setInputSort('');
+        setCurrentTodos(peopleFromServer);
+      }}
     >
       <p className={cn('has-text-link')}>({item.name})</p>
     </div>
@@ -60,6 +70,7 @@ export const App: React.FC<Props> = ({
               placeholder="Enter a part of the name"
               className="input"
               data-cy="search-input"
+              value={inputSort}
               onChange={handleChangeInput}
             />
           </div>
@@ -80,7 +91,9 @@ export const App: React.FC<Props> = ({
           role="alert"
           data-cy="no-suggestions-message"
         >
-          <p className="has-text-danger">No matching suggestions</p>
+          {setCurrentTodos.length === 0 && (
+            <p className="has-text-danger">No matching suggestions</p>
+          )}
         </div>
       </main>
     </div>
