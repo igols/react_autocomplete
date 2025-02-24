@@ -16,8 +16,8 @@ export const App: React.FC<Props> = ({
 }) => {
   const [targetPerson, setTargetPerson] = useState<Person | null>();
   const [currentTodos, setCurrentTodos] = useState(peopleFromServer);
-  const [inputSort, setInputSort] = useState('');
-  const applyQuery = useCallback(debounce(setCurrentTodos, delay), [delay]);
+  const [inputSort, setInputSort] = useState<string | null>(null);
+  const applyQuery = useCallback(debounce(setInputSort, delay), []);
 
   useEffect(() => {
     return () => {
@@ -27,7 +27,7 @@ export const App: React.FC<Props> = ({
 
   const handleChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputSort(event.target.value.trim());
-    if (inputSort !== '') {
+    if (inputSort && inputSort.length > 0) {
       setCurrentTodos(
         currentTodos.filter(person =>
           person.name
@@ -59,8 +59,9 @@ export const App: React.FC<Props> = ({
     <div className="container">
       <main className="section is-flex is-flex-direction-column">
         <h1 className="title" data-cy="title">
-          {targetPerson &&
-            `${targetPerson?.name} (${targetPerson?.born} - ${targetPerson?.died})`}
+          {targetPerson
+            ? `${targetPerson?.name} (${targetPerson?.born} - ${targetPerson?.died})`
+            : 'No selected person'}
         </h1>
 
         <div className="dropdown is-active">
@@ -79,7 +80,6 @@ export const App: React.FC<Props> = ({
             <div className="dropdown-content"> {todos} </div>
           </div>
         </div>
-
         <div
           className="
             notification
@@ -91,7 +91,7 @@ export const App: React.FC<Props> = ({
           role="alert"
           data-cy="no-suggestions-message"
         >
-          {setCurrentTodos.length === 0 && (
+          {currentTodos.length === 0 && inputSort !== '' && (
             <p className="has-text-danger">No matching suggestions</p>
           )}
         </div>
