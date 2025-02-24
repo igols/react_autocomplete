@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cn from 'classnames';
 import './App.scss';
 import { Person } from './types/Person';
@@ -10,35 +10,34 @@ type Props = {
   onSelected?: (person: Person | null) => void;
 };
 
-export const App: React.FC<Props> = ({
-  delay = 300,
-  // onSelected = () => {},
-}) => {
+export const App: React.FC<Props> = () => {
   const [targetPerson, setTargetPerson] = useState<Person | null>();
   const [currentTodos, setCurrentTodos] = useState(peopleFromServer);
-  const [inputSort, setInputSort] = useState<string | null>(null);
-  const applyQuery = useCallback(debounce(setInputSort, delay), []);
-
-  useEffect(() => {
-    return () => {
-      applyQuery.cancel();
-    };
-  }, [applyQuery]);
+  const [inputSort, setInputSort] = useState<string>('');
+  const [appliedInputSort, setAppliedInputSort] = useState('');
 
   const handleChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputSort(event.target.value.trim());
-    if (inputSort && inputSort.length > 0) {
+    setInputSort(event.target.value);
+    if (inputSort.length > 0) {
       setCurrentTodos(
         currentTodos.filter(person =>
           person.name
             .toLocaleLowerCase()
-            .includes(inputSort.toLocaleLowerCase()),
+            .includes(appliedInputSort.trim().toLocaleLowerCase()),
         ),
       );
     } else {
       setCurrentTodos(peopleFromServer);
     }
   };
+
+  useEffect(() => {
+    const handler = debounce(() => setAppliedInputSort(inputSort), 300);
+
+    handler();
+
+    return () => handler.cancel();
+  }, [inputSort]);
 
   const todos = currentTodos.map((item, index) => (
     <div
