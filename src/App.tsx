@@ -39,11 +39,11 @@ export const App: React.FC<Props> = () => {
     return () => handler.cancel();
   }, [inputSort]);
 
-  const todos = currentTodos.map((item, index) => (
+  const todos = currentTodos.map(item => (
     <div
       className="dropdown-item"
       data-cy="suggestion-item"
-      key={index}
+      key={item.slug}
       onClick={() => {
         setTargetPerson(item);
         setInputSort('');
@@ -90,7 +90,7 @@ export const App: React.FC<Props> = () => {
           role="alert"
           data-cy="no-suggestions-message"
         >
-          {currentTodos.length === 0 && inputSort !== '' && (
+          {currentTodos.length && inputSort && (
             <p className="has-text-danger">No matching suggestions</p>
           )}
         </div>
